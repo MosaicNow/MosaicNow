@@ -1,0 +1,67 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #c1bcea; /* 보라색 배경 설정 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  position: absolute; /* 절대 위치 지정 */
+  top: 50%; /* 화면 상단에서의 거리를 50%로 지정 */
+  left: 50%; /* 화면 좌측에서의 거리를 50%로 지정 */
+  transform: translate(-50%, -50%); /* 요소의 중심을 화면의 정 중앙으로 이동 */
+}
+
+.title_and_startbutton {
+  /*border: 2px solid black;*/
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 10px;
+}
+
+.all_contents {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.resultImageContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.input-container {
+  margin-top: 20px; /* 각 요소 사이의 간격 조절을 위해 추가 */
+  height: 200px;
+}
+
+.add_button {
+  height: 3.5vh;
+  width: 20vw;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: #988fdc;
+  color: white;
+  border-radius: 5px;
+}
+
+.add_button:hover{
+  background-color: #7467d8;
+}
+
+.all_contents {
+  /* border: 2px solid yellow;*/
+}
+
+.background {
+  padding: 30px;
+  background-color: white;
+
+  border: 2px solid #e6eaf5;
+  border-radius: 2%;
+  width: 100%;
+}

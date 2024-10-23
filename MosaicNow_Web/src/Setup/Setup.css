@@ -1,0 +1,208 @@
+@import url("https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Sunflower:wght@300&display=swap");
+
+body {
+  font-family: "Do Hyeon";
+  color: #8f8e8e;
+}
+#root {
+  width: 90vw;
+  height: 90vh;
+
+  display: flex;
+
+  justify-content: center;
+  margin: 0;
+}
+.SetupPage {
+  width: 60vw;
+  height: 50vw;
+}
+
+.SetupPage_info {
+  display: flex;
+  justify-content: center;
+
+  width: 100%;
+  height: 80%;
+  /*border: 2px solid yellow;*/
+}
+.back {
+  background-color: white;
+  width: 100%;
+  height: 80%;
+  border: 2px solid #cdcdcd;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  border-radius: 5px;
+}
+
+.setup_top {
+  display: flex;
+  flex-direction: column;
+  /*border: 2px solid black;*/
+}
+
+.usericon_setup {
+  /* border: 2px solid red; */
+  height: 30%;
+  width: 15%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.user_icon_ {
+  height: auto;
+  width: 80%;
+  border: 4px solid #cdcdcd;
+
+  padding: 10%;
+  border-radius: 50%;
+  margin-top: 10%;
+}
+.input_and_check {
+  height: 100%;
+  width: 100%;
+  /* border: 2px solid aqua; */
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 10%;
+}
+.pw_check {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #cdcdcd;
+  flex-direction: column;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  width: 20vw;
+  height: 30px;
+}
+.PW-txt {
+  color: #cdcdcd;
+}
+.input-place-check-pw {
+  height: 30px;
+  width: 100%;
+  border: 2px solid #cdcdcd;
+  border-radius: 5px;
+}
+.check {
+  margin-top: 3vh;
+  height: 3vh;
+  width: 4vh;
+}
+.pw-check {
+  color: #cdcdcd;
+}
+.Change_info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+
+  height: 40%;
+  width: 20%;
+  /* border: 2px solid black; */
+}
+
+.Change_StreamKey {
+  height: 3.5vh;
+  width: 20vw;
+  margin-bottom: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: #c1bcea;
+  color: white;
+  border-radius: 5px;
+}
+.Change_StreamKey:hover {
+  background-color: #988fdc;
+}
+.Change_PW {
+  height: 3.5vh;
+  width: 20vw;
+  margin-bottom: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: #c1bcea;
+  color: white;
+  border-radius: 5px;
+}
+.Change_PW:hover {
+  background-color: #988fdc;
+}
+
+.input_place_PW {
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+
+  width: 20vw;
+  flex-direction: column;
+}
+.check {
+  height: 3.5vh;
+  width: 20vw;
+  margin-bottom: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: #c1bcea;
+  color: white;
+  border-radius: 5px;
+}
+
+.check:hover {
+  background-color: #988fdc;
+}
+
+.Change_Info_box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.input_place_box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.new_pw {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #cdcdcd;
+  flex-direction: column;
+  border-radius: 5px;
+  margin-bottom: 30px;
+  width: 20vw;
+  height: 30px;
+}
+
+.gohomebutton {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+}
+
+.gOHome {
+  height: 3.5vh;
+  width: 20vw;
+  margin-bottom: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: #c1bcea;
+  color: white;
+  border-radius: 5px;
+}
+
+.gOHome:hover {
+  background-color: #988fdc;
+}

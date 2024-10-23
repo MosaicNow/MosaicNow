@@ -1,0 +1,126 @@
+.Login_Join_all {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  width: 20%;
+}
+.Login-background {
+  background-color: white;
+  width: 25vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+  padding-top: 5px;
+  padding-bottom: 25px;
+}
+.idt {
+  color: #cdcdcd;
+}
+
+.pwt {
+  color: #cdcdcd; /*아이디 패스워드 글씨색*/
+}
+.login-to-account {
+  padding-bottom: 25px;
+  font-size: 1.7vw;
+  font-weight: bold;
+}
+.input-idpw {
+  padding-top: 20px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.input_place_tohome,
+.input_place_tohome_PW {
+  height: 30px; /* 뷰포트 높이 단위(vh) 대신 고정 픽셀값 사용 */
+  width: 20vw;
+  border: 2px solid #cdcdcd;
+  border-radius: 5px;
+  margin-bottom: 10px; /* 모든 입력 필드에 일관된 상단 마진 적용 */
+}
+.buttons_box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+  margin-top: 3vh;
+}
+.buttons_box a {
+  display: flex;
+  text-decoration: none;
+  color: inherit;
+  margin: 0 10px;
+}
+.check_to_home {
+  height: 3.5vh;
+  width: 20vw;
+  margin-bottom: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: #c1bcea;
+  color: white;
+  border-radius: 5px;
+}
+.check_to_home:hover {
+  background-color: #988fdc;
+}
+.check_to_join {
+  height: 3.5vh;
+  width: 20vw;
+  border: none;
+  cursor: pointer;
+  background-color: #d9d9dc;
+  color: white;
+  border-radius: 5px;
+}
+.check_to_join:hover {
+  background-color: #b8b8b8;
+}
+.Join-background {
+  background-color: white;
+  width: 25vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+  padding-top: 5px;
+  padding-bottom: 25px;
+}
+.signup {
+  padding-bottom: 25px;
+  font-size: 1.7vw;
+  font-weight: bold;
+}
+.join-input-idpw {
+  padding-top: 20px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.join_check_to_home {
+  height: 3.5vh;
+  width: 20vw;
+  margin-bottom: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: #c1bcea;
+  color: white;
+  border-radius: 5px;
+  margin-top: 3vh;
+}
+
+.join_check_to_home:hover {
+  background-color: #988fdc;
+}

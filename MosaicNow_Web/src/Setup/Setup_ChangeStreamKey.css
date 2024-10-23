@@ -1,0 +1,65 @@
+@import url("https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap");
+#root {
+  width: 99vw;
+  height: 90vh;
+  font-family: "Do Hyeon";
+  display: flex;
+
+  justify-content: center;
+  margin: 0;
+}
+
+.Setup_Page {
+  width: 60vw;
+  height: 50vw;
+}
+
+.Change_Info_box {
+  display: flex;
+  justify-content: center;
+
+  flex-direction: row;
+  /* border: 2px solid black; */
+  width: 35%;
+  height: 10%;
+}
+
+.input_place_box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+  /* border: 2px solid black; */
+  width: 80%;
+}
+
+.input_place {
+  height: 30px;
+  width: 20vw;
+  border: 2px solid #cdcdcd;
+  border-radius: 2%;
+  border-radius: 5px;
+}
+
+.input_place_stk {
+  height: 30px;
+  width: 20vw;
+  border: 2px solid #cdcdcd;
+  border-radius: 2%;
+  border-radius: 5px;
+  color: #cdcdcd;
+}
+.gOHome_ {
+  height: 3.5vh;
+  width: 20vw;
+  margin-bottom: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: #c1bcea;
+  color: white;
+  border-radius: 5px;
+}
+
+.gOHome_:hover {
+  background-color: #988fdc;
+}
