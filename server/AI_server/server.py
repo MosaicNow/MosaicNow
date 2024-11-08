@@ -19,6 +19,18 @@ model_path = os.path.join(script_dir, 'face_detection_yolov5s.pt')
 model = torch.hub.load(yolov5_path, 'custom', path=model_path, source='local')
 resnet = InceptionResnetV1(pretrained='vggface2').eval()
 
+
+'''
+CREATE TABLE embeddings (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT,
+    face_name VARCHAR(255),
+    embedding BLOB,
+    PRIMARY KEY (id)
+);
+'''
+
+
 db = mysql.connector.connect(
     host="127.0.0.1",
     user="root",
@@ -135,12 +147,30 @@ def start_streaming(sid, data):
     user_id = data['user_id']
     stream_key = data['streamKey']
 
+    FFmpeg = r'C:\Users\ffmpeg-7.1-essentials_build\bin\ffmpeg.exe'
+    YOUTUBE_URL = 'rtmp://a.rtmp.youtube.com/live2'
+
     ffmpeg_command = [
-        "ffmpeg",
-        "-y", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", "640x480",
-        "-r", "10", "-i", "-", "-f", "flv",
-        f"rtmp://a.rtmp.youtube.com/live2/{stream_key}"
-    ]
+    FFmpeg,
+    '-f', 'mjpeg',             # 이 옵션을 추가하여 입력이 MJPEG 형식임을 명시
+    '-i', '-',                 # 파이프 입력을 통해 이미지를 스트림으로 전송
+    '-f', 'lavfi',
+    '-i', 'anullsrc=r=44100:cl=stereo',
+    '-acodec', 'aac',
+    '-ar', '44100',
+    '-ac', '2',
+    '-strict', 'experimental',
+    '-vcodec', 'libx264',
+    '-g', '60',
+    '-vb', '1500k',
+    '-profile:v', 'baseline',
+    '-preset', 'ultrafast',
+    '-r', '30',
+    '-f', 'flv',
+    f"{YOUTUBE_URL}/{stream_key}"
+]
+
+    
     ffmpeg_processes[user_id] = subprocess.Popen(ffmpeg_command, stdin=subprocess.PIPE)
     sio.emit('streaming_started', {'status': 'success', 'message': 'Streaming has started!'}, room=sid)
 
@@ -161,15 +191,32 @@ def video_frame(sid, data):
     face_names = data['face_names']
     image_data = base64.b64decode(data['image'])
 
+    # 얼굴 모자이크를 적용
     embeddings = get_user_embeddings(user_id, face_names) 
     processed_frame = detect_faces_and_apply_mosaic(image_data, embeddings)
 
-    _, buffer = cv2.imencode('.jpg', processed_frame)
-    sio.emit('processed_frame', {'image': base64.b64encode(buffer).decode('utf-8')}, room=sid)
+    # 프레임을 JPEG로 인코딩
+    success, encoded_frame = cv2.imencode('.jpg', processed_frame)
+    if not success:
+        print("Error: Failed to encode frame as JPEG")
+        return
 
+    frame_bytes = encoded_frame.tobytes()
+
+    # 디버깅용: ffmpeg에 전송되는 프레임을 로컬에 저장
+    #with open("debug_frame.jpg", "wb") as f:
+    #    f.write(frame_bytes)
+        
+
+    # 클라이언트에 전송
+    sio.emit('processed_frame', {'image': base64.b64encode(encoded_frame).decode('utf-8')}, room=sid)
+
+    # FFmpeg 프로세스로 프레임 전송
     if user_id in ffmpeg_processes:
         try:
-            ffmpeg_processes[user_id].stdin.write(processed_frame.tobytes())
+            for _ in range(3):  # 같은 프레임을 3번 전송
+                ffmpeg_processes[user_id].stdin.write(frame_bytes)
+                ffmpeg_processes[user_id].stdin.flush()  # flush를 통해 데이터 전송을 보장
         except Exception as e:
             print(f"Error writing to FFmpeg for user {user_id}: {e}")
 

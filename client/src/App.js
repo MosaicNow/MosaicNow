@@ -91,7 +91,7 @@ function App() {
       return;
     }
 
-    socket.emit("start_streaming", { streamKey });
+    socket.emit("start_streaming", { user_id: userId, streamKey });
     alert("Streaming started!");
   };
 
