@@ -83,31 +83,9 @@ function App() {
     clearInterval(previewIntervalRef.current);
   };
 
-  // 오디오 WebRTC 연결 시작
-  const startWebRTCAudio = async () => {
-    const peerConnection = new RTCPeerConnection();
-    peerConnectionRef.current = peerConnection;
-
-    // 오디오 스트림 가져오기
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
-
-    // ICE candidate 수집
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("webrtc_ice_candidate", { candidate: event.candidate });
-      }
-    };
-
-    // 서버로 offer 보내기
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-
-    socket.emit("webrtc_offer", { sdp: peerConnection.localDescription.sdp, type: offer.type });
-  };
-
   useEffect(() => {
     socket.on("webrtc_answer", async (data) => {
+      console.Log("client answer");
       const answer = new RTCSessionDescription(data);
       await peerConnectionRef.current.setRemoteDescription(answer);
     });
@@ -127,12 +105,46 @@ function App() {
     };
   }, []);
 
+
+  // 오디오 WebRTC 연결 시작
+  const startWebRTCAudio = async () => {
+    console.log("startWebRTCAudio_0");
+    const peerConnection = new RTCPeerConnection();
+    peerConnectionRef.current = peerConnection;
+    console.log("startWebRTCAudio_1");
+    // 오디오 스트림 가져오기
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
+    console.log("startWebRTCAudio_2");
+    // ICE candidate 수집
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("webrtc_ice_candidate", { candidate: event.candidate });
+      }
+    };
+    console.log("startWebRTCAudio_3");
+    // 서버로 offer 보내기
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    console.log("startWebRTCAudio_4");
+    // 서버로 sdp, user_id, stream_key 전송
+    
+    await socket.emit("webrtc_offer", {
+      sdp: peerConnection.localDescription.sdp,
+      type: offer.type,
+      user_id: userId,          // user_id 추가
+      stream_key: streamKey     // stream_key 추가
+    });
+  };
+  
+
+
   const startStreaming = () => {
     if (!streamKey) {
       alert("Please enter a stream key.");
       return;
     }
-    socket.emit("start_streaming", { user_id: userId, streamKey });
+    socket.emit("start_streaming", { user_id: userId, stream_key: streamKey });
     alert("Streaming started!");
 
     // 오디오 WebRTC 연결 시작

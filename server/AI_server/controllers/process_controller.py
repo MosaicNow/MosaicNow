@@ -1,7 +1,7 @@
 import base64
 from services.embedding_service import save_face_embedding_to_db, get_user_embeddings
 from services.mosaic_service import detect_faces_and_apply_mosaic
-from services.ffmpeg_service import start_ffmpeg_stream, stop_ffmpeg_stream, send_audio_to_ffmpeg, start_ffmpeg_audio_stream, ffmpeg_processes
+from services.ffmpeg_service import start_ffmpeg_video_stream, stop_ffmpeg_streams, send_audio_to_ffmpeg, start_ffmpeg_audio_stream, ffmpeg_processes_video, ffmpeg_processes_audio
 from app_utils.yolov5_utils import model, resnet
 import cv2
 import numpy as np
@@ -55,11 +55,11 @@ def video_frame(sid, data):
     frame_bytes = encoded_frame.tobytes()
     sio.emit('processed_frame', {'image': base64.b64encode(encoded_frame).decode('utf-8')}, room=sid)
 
-    if user_id in ffmpeg_processes:
+    if user_id in ffmpeg_processes_video:
         try:
             for _ in range(3):
-                ffmpeg_processes[user_id].stdin.write(frame_bytes)
-                ffmpeg_processes[user_id].stdin.flush()
+                ffmpeg_processes_video[user_id].stdin.write(frame_bytes)
+                ffmpeg_processes_video[user_id].stdin.flush()
         except Exception as e:
             print(f"Error writing to FFmpeg for user {user_id}: {e}")
 
@@ -68,8 +68,8 @@ def video_frame(sid, data):
 @sio.event
 def start_streaming(sid, data):
     user_id = data['user_id']
-    stream_key = data['streamKey']
-    start_ffmpeg_stream(user_id, stream_key)
+    stream_key = data['stream_key']
+    start_ffmpeg_video_stream(user_id, stream_key)
     sio.emit('streaming_started', {'status': 'success', 'message': 'Streaming has started!'}, room=sid)
 
 
@@ -77,28 +77,29 @@ def start_streaming(sid, data):
 @sio.event
 def stop_streaming(sid, data):
     user_id = data['user_id']
-    stop_ffmpeg_stream(user_id)
+    stop_ffmpeg_streams(user_id)
     sio.emit('streaming_stopped', {'status': 'success', 'message': 'Streaming has stopped.'}, room=sid)
 
 
 # WebRTC Offer 처리 (오디오)
 @sio.event
 async def webrtc_offer(sid, data):
+    print("server offer_0\n")
     pc = RTCPeerConnection()
     sdp = data.get("sdp")
     user_id = data.get("user_id")
     stream_key = data.get("stream_key")
     
     await pc.setRemoteDescription(RTCSessionDescription(sdp, "offer"))
-
+    print("server offer_1\n")
     # Answer 생성
     answer = await pc.createAnswer()
     await pc.setLocalDescription(answer)
-    sio.emit("webrtc_answer", {"sdp": pc.localDescription.sdp, "type": "answer"}, room=sid)
-
+    await sio.emit("webrtc_answer", {"sdp": str(pc.localDescription.sdp), "type": "answer"}, room=sid)
+    print("server offer_2\n")
     # FFmpeg 오디오 스트림 시작
     start_ffmpeg_audio_stream(user_id, stream_key)
-
+    print("server offer_3\n")
     # 오디오 트랙 수신 처리
     @pc.on("track")
     async def on_track(track):
