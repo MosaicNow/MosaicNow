@@ -7,15 +7,16 @@ const socket = io("http://localhost:5000", {
 
 function App() {
   const [userId] = useState("1"); // userId를 1로 하드코딩
-  const [faceOptions, setFaceOptions] = useState(["hj", "yr", "sc"]); // 데베에서 불러올 예정
-  const [selectedFaceNames, setSelectedFaceNames] = useState([]); // 선택된 얼굴 이름 리스트
-  const [faceNameToRegister, setFaceNameToRegister] = useState(""); // 새로 등록할 얼굴 이름
+  const [faceOptions, setFaceOptions] = useState(["hj", "yr", "sc"]);
+  const [selectedFaceNames, setSelectedFaceNames] = useState([]);
+  const [faceNameToRegister, setFaceNameToRegister] = useState("");
   const [streamKey, setStreamKey] = useState("");
   const [processedImage, setProcessedImage] = useState("");
   const [isPreviewing, setIsPreviewing] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const previewIntervalRef = useRef(null);
+  const peerConnectionRef = useRef(null);
 
   useEffect(() => {
     socket.on("register_result", (data) => {
@@ -33,16 +34,14 @@ function App() {
     };
   }, []);
 
-  // 얼굴 선택 체크박스 변경 시 호출되는 함수
   const handleFaceNameChange = (faceName) => {
     setSelectedFaceNames((prevSelected) =>
       prevSelected.includes(faceName)
-        ? prevSelected.filter((name) => name !== faceName) // 이미 선택된 경우 제거
-        : [...prevSelected, faceName] // 선택된 경우 추가
+        ? prevSelected.filter((name) => name !== faceName)
+        : [...prevSelected, faceName]
     );
   };
 
-  // selectedFaceNames 변경 시 프리뷰가 재시작되도록 설정
   useEffect(() => {
     if (isPreviewing) {
       stopPreview();
@@ -50,7 +49,6 @@ function App() {
     }
   }, [selectedFaceNames]);
 
-  // 웹캠에서 이미지를 캡처하여 서버에 전송 (얼굴 등록용)
   const captureImage = () => {
     if (!faceNameToRegister) {
       alert("Please enter a face name to register.");
@@ -64,7 +62,7 @@ function App() {
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     const image = canvas.toDataURL("image/jpeg").split(",")[1];
     socket.emit("register_face", { user_id: userId, face_name: faceNameToRegister, image });
-    setFaceNameToRegister(""); // 얼굴 이름 입력 필드 초기화
+    setFaceNameToRegister("");
   };
 
   const startPreview = () => {
@@ -85,19 +83,64 @@ function App() {
     clearInterval(previewIntervalRef.current);
   };
 
+  // 오디오 WebRTC 연결 시작
+  const startWebRTCAudio = async () => {
+    const peerConnection = new RTCPeerConnection();
+    peerConnectionRef.current = peerConnection;
+
+    // 오디오 스트림 가져오기
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
+
+    // ICE candidate 수집
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("webrtc_ice_candidate", { candidate: event.candidate });
+      }
+    };
+
+    // 서버로 offer 보내기
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+
+    socket.emit("webrtc_offer", { sdp: peerConnection.localDescription.sdp, type: offer.type });
+  };
+
+  useEffect(() => {
+    socket.on("webrtc_answer", async (data) => {
+      const answer = new RTCSessionDescription(data);
+      await peerConnectionRef.current.setRemoteDescription(answer);
+    });
+
+    socket.on("webrtc_ice_candidate", async (data) => {
+      try {
+        await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+        console.log("ICE candidate added successfully:", data.candidate);
+      } catch (error) {
+        console.error("Error adding received ICE candidate", error);
+      }
+    });
+
+    return () => {
+      socket.off("webrtc_answer");
+      socket.off("webrtc_ice_candidate");
+    };
+  }, []);
+
   const startStreaming = () => {
     if (!streamKey) {
       alert("Please enter a stream key.");
       return;
     }
-
     socket.emit("start_streaming", { user_id: userId, streamKey });
     alert("Streaming started!");
+
+    // 오디오 WebRTC 연결 시작
+    startWebRTCAudio();
   };
 
   useEffect(() => {
     const video = videoRef.current;
-
     if (navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices
         .getUserMedia({ video: true })

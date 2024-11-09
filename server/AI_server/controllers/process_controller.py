@@ -1,11 +1,13 @@
 import base64
 from services.embedding_service import save_face_embedding_to_db, get_user_embeddings
 from services.mosaic_service import detect_faces_and_apply_mosaic
-from services.ffmpeg_service import start_ffmpeg_stream, stop_ffmpeg_stream, ffmpeg_processes
+from services.ffmpeg_service import start_ffmpeg_stream, stop_ffmpeg_stream, send_audio_to_ffmpeg, start_ffmpeg_audio_stream, ffmpeg_processes
 from app_utils.yolov5_utils import model, resnet
 import cv2
 import numpy as np
 from app_utils.sio_manager import sio
+from aiortc import RTCPeerConnection, RTCSessionDescription
+from aiortc.contrib.media import MediaStreamTrack
 
 
 # 얼굴 등록 이벤트 핸들러
@@ -77,3 +79,34 @@ def stop_streaming(sid, data):
     user_id = data['user_id']
     stop_ffmpeg_stream(user_id)
     sio.emit('streaming_stopped', {'status': 'success', 'message': 'Streaming has stopped.'}, room=sid)
+
+
+# WebRTC Offer 처리 (오디오)
+@sio.event
+async def webrtc_offer(sid, data):
+    pc = RTCPeerConnection()
+    sdp = data.get("sdp")
+    user_id = data.get("user_id")
+    stream_key = data.get("stream_key")
+    
+    await pc.setRemoteDescription(RTCSessionDescription(sdp, "offer"))
+
+    # Answer 생성
+    answer = await pc.createAnswer()
+    await pc.setLocalDescription(answer)
+    sio.emit("webrtc_answer", {"sdp": pc.localDescription.sdp, "type": "answer"}, room=sid)
+
+    # FFmpeg 오디오 스트림 시작
+    start_ffmpeg_audio_stream(user_id, stream_key)
+
+    # 오디오 트랙 수신 처리
+    @pc.on("track")
+    async def on_track(track):
+        print("Received track:", track.kind)  # 트랙 종류 로그
+        if track.kind == "audio":
+            while True:
+                frame = await track.recv()
+                print("Received audio frame:", frame)  # 오디오 프레임 로그
+                send_audio_to_ffmpeg(user_id, frame.to_ndarray())  # 서비스 함수로 프레임 전송
+
+
