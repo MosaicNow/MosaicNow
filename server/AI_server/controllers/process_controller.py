@@ -42,7 +42,7 @@ def video_frame(sid, data):
     face_names = data['face_names']
     image_data = base64.b64decode(data['image'])
 
-    embeddings = get_user_embeddings(user_id, face_names) 
+    embeddings = get_user_embeddings(user_id, face_names)
     processed_frame = detect_faces_and_apply_mosaic(image_data, embeddings)
 
     success, encoded_frame = cv2.imencode('.jpg', processed_frame)
@@ -55,12 +55,26 @@ def video_frame(sid, data):
 
     if user_id in ffmpeg_processes:
         try:
-            for _ in range(3):
-                ffmpeg_processes[user_id].stdin.write(frame_bytes)
-                ffmpeg_processes[user_id].stdin.flush()
+            ffmpeg_processes[user_id]['video'].stdin.write(frame_bytes)
+            ffmpeg_processes[user_id]['video'].stdin.flush()
         except Exception as e:
-            print(f"Error writing to FFmpeg for user {user_id}: {e}")
+            print(f"Error writing video to FFmpeg for user {user_id}: {e}")
 
+
+@sio.event
+def audio_frame(sid, data):
+    user_id = data["user_id"]
+    try:
+        # Base64 디코딩
+        audio_data = base64.b64decode(data["audio"])
+        
+        if user_id in ffmpeg_processes:
+            # FFmpeg가 기대하는 PCM 형식으로 전송
+            ffmpeg_processes[user_id]['audio'].stdin.write(audio_data)
+            ffmpeg_processes[user_id]['audio'].stdin.flush()
+    except Exception as e:
+        print(f"Error writing audio to FFmpeg for user {user_id}: {e}")
+        
 
 # 스트리밍 시작 이벤트
 @sio.event
