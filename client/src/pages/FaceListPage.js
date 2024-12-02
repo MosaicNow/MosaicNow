@@ -13,26 +13,53 @@ function FaceListPage() {
     const [currentFaceName, setCurrentFaceName] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    const getCookieValue = (name) => {
+        const matches = document.cookie.match(
+            new RegExp(
+                "(?:^|; )" +
+                    name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") +
+                    "=([^;]*)"
+            )
+        );
+        return matches ? decodeURIComponent(matches[1]) : undefined;
+    };
+
+    const fetchFaceList = () => {
+        const userId = getCookieValue("user_id");
+
+        if (!userId) {
+            alert("User ID not found. Please log in.");
+            return;
+        }
+
+        setLoading(true);
+        socket.emit("fetch_faces_request", { user_id: userId });
+    };
+
     useEffect(() => {
-        socket.on("register_result", (data) => {
-            alert(data.message); // 등록 결과 표시
+        socket.on("fetch_faces_result", (data) => {
+            // 중복 제거
+            const uniqueFaces = Array.from(
+                new Set(data.faces.map((face) => face.face_name))
+            ).map((name) => ({ face_name: name }));
+
+            setFaceList(uniqueFaces); // 중복 제거된 얼굴 목록 설정
+            setLoading(false);
+        });
+
+        socket.on("delete_face_result", (data) => {
             if (data.success) {
                 fetchFaceList();
+            } else {
+                alert("Failed to delete face.");
             }
         });
 
         return () => {
-            socket.off("register_result");
+            socket.off("fetch_faces_result");
+            socket.off("delete_face_result");
         };
     }, []);
-
-    const fetchFaceList = () => {
-        setLoading(true);
-        socket.emit("fetch_faces", {}, (response) => {
-            setFaceList(response.faces || []);
-            setLoading(false);
-        });
-    };
 
     useEffect(() => {
         fetchFaceList();
@@ -48,16 +75,6 @@ function FaceListPage() {
         setIsPopupOpen(false);
     };
 
-    const deleteFace = (faceName) => {
-        socket.emit("delete_face", { name: faceName }, (response) => {
-            if (response.success) {
-                fetchFaceList();
-            } else {
-                alert("Failed to delete face.");
-            }
-        });
-    };
-
     const handleFaceNameChange = (faceName) => {
         setSelectedFaces((prevSelected) =>
             prevSelected.includes(faceName)
@@ -66,45 +83,51 @@ function FaceListPage() {
         );
     };
 
+    const deleteFace = (faceName) => {
+        const userId = getCookieValue("user_id");
+
+        if (!userId) {
+            alert("User ID not found. Please log in.");
+            return;
+        }
+
+        socket.emit("delete_face", { user_id: userId, face_name: faceName });
+    };
+
     return (
         <div style={styles.container}>
             <h1 style={styles.header}>Face List</h1>
             {loading ? (
                 <p style={styles.loadingMessage}>Loading...</p>
-            ) : faceList.length > 0 ? (
-                faceList.map((face) => (
-                    <div key={face.name} style={styles.faceItem}>
-                        <span style={styles.faceName}>{face.name}</span>
-                        <img
-                            src={face.images[0]}
-                            alt={`Face of ${face.name}`}
-                            style={styles.faceImage}
-                        />
-                        <input
-                            type="checkbox"
-                            checked={selectedFaces.includes(face.name)}
-                            onChange={() => handleFaceNameChange(face.name)}
-                            style={styles.checkbox}
-                        />
-                        <button
-                            style={styles.addButton}
-                            onClick={() => openPopup(face.name)}
-                        >
-                            +
-                        </button>
-                        <button
-                            style={styles.deleteButton}
-                            onClick={() => deleteFace(face.name)}
-                        >
-                            🗑
-                        </button>
-                    </div>
-                ))
             ) : (
-                <p style={styles.noFacesMessage}>No faces available. Add a new face!</p>
+                <>
+                    {faceList.map((face) => (
+                        <div key={face.face_name} style={styles.faceItem}>
+                            <span style={styles.faceName}>{face.face_name}</span>
+                            <input
+                                type="checkbox"
+                                checked={selectedFaces.includes(face.face_name)}
+                                onChange={() => handleFaceNameChange(face.face_name)}
+                                style={styles.checkbox}
+                            />
+                            <button
+                                style={styles.deleteButton}
+                                onClick={() => deleteFace(face.face_name)}
+                            >
+                                🗑
+                            </button>
+                            <button
+                                style={styles.addButton}
+                                onClick={() => openPopup(face.face_name)}
+                            >
+                                Add
+                            </button> 
+                        </div>
+                    ))}
+                </>
             )}
             <button style={styles.addFaceButton} onClick={() => openPopup(null)}>
-                👤+
+                Add New Face
             </button>
             {isPopupOpen && (
                 <FacePopup
@@ -136,55 +159,28 @@ const styles = {
         padding: "10px",
         borderRadius: "5px",
         gap: "10px",
-        boxShadow: "2px 2px 5px rgba(0, 0, 0, 0.5)",
     },
     faceName: {
         flexGrow: 1,
         color: "#fff",
         fontSize: "16px",
     },
-    faceImage: {
-        width: "50px",
-        height: "50px",
-        borderRadius: "50%",
-        objectFit: "cover",
-    },
-    checkbox: {
-        margin: "0 10px",
-    },
     addButton: {
-        backgroundColor: "#4CAF50",
+        backgroundColor: "#007BFF",
         color: "#fff",
         border: "none",
         borderRadius: "5px",
         padding: "5px 10px",
         cursor: "pointer",
-        fontSize: "14px",
-    },
-    deleteButton: {
-        backgroundColor: "#f44336",
-        color: "#fff",
-        border: "none",
-        borderRadius: "5px",
-        padding: "5px 10px",
-        cursor: "pointer",
-        fontSize: "14px",
     },
     addFaceButton: {
-        marginTop: "10px",
-        backgroundColor: "#007BFF",
+        backgroundColor: "#4CAF50",
         color: "#fff",
         border: "none",
         borderRadius: "5px",
         padding: "10px 20px",
         cursor: "pointer",
         alignSelf: "center",
-        fontSize: "16px",
-    },
-    noFacesMessage: {
-        color: "#aaa",
-        textAlign: "center",
-        fontStyle: "italic",
     },
 };
 

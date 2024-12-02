@@ -29,9 +29,12 @@ const Header = () => {
                 >
                     Settings
                 </Link>
-                <button style={styles.button} disabled>
-                    Account
-                </button>
+                <Link
+                    to="/logout"
+                    style={isActive("/logout") ? styles.activeButton : styles.button}
+                >
+                    Logout
+                </Link>
             </nav>
         </header>
     );

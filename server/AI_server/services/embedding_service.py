@@ -5,12 +5,16 @@ user_data_cache = {}
 
 
 def save_face_embedding_to_db(user_id, face_name, embedding):
-    db = get_db_connection()
-    cursor = db.cursor()
-    embedding_blob = embedding.tobytes()
-    query = "INSERT INTO embeddings (user_id, face_name, embedding) VALUES (%s, %s, %s)"
-    cursor.execute(query, (user_id, face_name, embedding_blob))
-    db.commit()
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+        embedding_blob = embedding.tobytes()
+        query = "INSERT INTO embeddings (user_id, face_name, embedding) VALUES (%s, %s, %s)"
+        cursor.execute(query, (user_id, face_name, embedding_blob))
+        db.commit()
+        print(f"Face {face_name} saved to database for user {user_id}.")
+    except Exception as e:
+        print(f"Error saving to database: {e}")
 
 
 def load_user_embeddings(user_id, face_names):
@@ -44,3 +48,22 @@ def get_user_embeddings(user_id, face_names):
             embeddings.append(embedding)
     
     return embeddings
+
+def fetch_faces(user_id):
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        # user_id에 해당하는 face_name 목록 조회
+        query = "SELECT face_name FROM embeddings WHERE user_id = %s"
+        cursor.execute(query, (user_id,))
+        results = cursor.fetchall()
+
+        # face_name 목록 반환
+        face_list = [row[0] for row in results]
+        return face_list
+    except Exception as e:
+        print(f"Error in fetch_faces: {e}")
+        return []
+
+

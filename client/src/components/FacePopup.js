@@ -5,51 +5,82 @@ const socket = io("http://localhost:5000", {
     transports: ["websocket"],
 });
 
-function FacePopup({ initialFaceName = "", onClose }) {
-    const [faceName, setFaceName] = useState(initialFaceName);
-    const [capturedImage, setCapturedImage] = useState(null);
+function FacePopup({ onClose, initialFaceName }) {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
+    const [capturedImage, setCapturedImage] = useState(null);
+    const [faceName, setFaceName] = useState(initialFaceName);
 
     useEffect(() => {
         const video = videoRef.current;
+
         if (navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices
                 .getUserMedia({ video: true })
                 .then((stream) => {
                     video.srcObject = stream;
-                    video.play();
+                    video.onloadedmetadata = () => video.play();
                 })
-                .catch((error) => console.error("Error accessing webcam: ", error));
+                .catch((error) => console.error("Error accessing webcam:", error));
         }
 
         return () => {
-            if (video.srcObject) {
-                video.srcObject.getTracks().forEach((track) => track.stop());
+            if (video?.srcObject) {
+                const tracks = video.srcObject.getTracks();
+                tracks.forEach((track) => track.stop());
             }
         };
     }, []);
 
     const handleCapture = () => {
+        if (!faceName.trim()) {
+            alert("Please enter a face name before capturing.");
+            return;
+        }
+
         const canvas = canvasRef.current;
         const video = videoRef.current;
         const context = canvas.getContext("2d");
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         setCapturedImage(canvas.toDataURL("image/jpeg"));
     };
 
     const handleAdd = () => {
-        if (capturedImage) {
-            socket.emit("register_face", { name: faceName, image: capturedImage }, (response) => {
-                if (response.success) {
-                    alert("Face registered successfully!");
-                    onClose();
-                } else {
-                    alert("Failed to register face.");
-                }
-            });
+        if (!capturedImage || !faceName.trim()) {
+            alert("Please capture an image and enter a name.");
+            return;
         }
+
+        // 쿠키에서 user_id 읽기
+        const getCookieValue = (name) => {
+            const matches = document.cookie.match(
+                new RegExp(
+                    "(?:^|; )" +
+                        name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") +
+                        "=([^;]*)"
+                )
+            );
+            return matches ? decodeURIComponent(matches[1]) : undefined;
+        };
+
+        const userId = getCookieValue("user_id");
+
+        if (!userId) {
+            alert("User ID not found. Please log in.");
+            return;
+        }
+
+        socket.emit("register_face", {
+            user_id: userId, // 쿠키에서 가져온 user_id 사용
+            face_name: faceName,
+            image: capturedImage.split(",")[1],
+        });
+
+        onClose();
     };
 
     return (
@@ -58,16 +89,30 @@ function FacePopup({ initialFaceName = "", onClose }) {
                 <button style={styles.closeButton} onClick={onClose}>
                     ✖
                 </button>
-                <video ref={videoRef} style={styles.video} autoPlay muted></video>
-                <canvas ref={canvasRef} style={styles.canvas} width="320" height="240"></canvas>
+                <video ref={videoRef} autoPlay muted style={styles.video}></video>
+                <canvas ref={canvasRef} style={styles.canvas}></canvas>
                 <input
                     type="text"
                     value={faceName}
                     onChange={(e) => setFaceName(e.target.value)}
                     placeholder="Enter face name"
+                    style={styles.input}
                 />
-                <button onClick={handleCapture}>Capture</button>
-                <button onClick={handleAdd}>Add</button>
+                <button onClick={handleCapture} style={styles.captureButton}>
+                    Capture
+                </button>
+                {capturedImage && (
+                    <>
+                        <img
+                            src={capturedImage}
+                            alt="Captured"
+                            style={styles.preview}
+                        />
+                        <button onClick={handleAdd} style={styles.addButton}>
+                            Add
+                        </button>
+                    </>
+                )}
             </div>
         </div>
     );
@@ -87,7 +132,6 @@ const styles = {
         zIndex: 1000,
     },
     modal: {
-        width: "400px",
         backgroundColor: "#ccc",
         borderRadius: "8px",
         padding: "20px",
@@ -95,7 +139,6 @@ const styles = {
         flexDirection: "column",
         gap: "20px",
         position: "relative",
-        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
     },
     closeButton: {
         position: "absolute",
@@ -106,69 +149,62 @@ const styles = {
         fontSize: "20px",
         cursor: "pointer",
     },
-    videoContainer: {
-        position: "relative",
-        backgroundColor: "#333",
-        height: "240px",
-        borderRadius: "4px",
-    },
     video: {
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        borderRadius: "4px",
-    },
-    capturedImage: {
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        borderRadius: "4px",
+        width: "320px",
+        height: "240px",
+        borderRadius: "8px",
     },
     canvas: {
-        display: "none", // 캔버스는 화면에 표시되지 않음
-    },
-    controls: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-    },
-    inputGroup: {
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-    },
-    label: {
-        fontSize: "14px",
-        color: "#000",
+        display: "none",
     },
     input: {
-        flexGrow: 1,
-        padding: "5px",
+        padding: "10px",
         borderRadius: "4px",
-        border: "1px solid #ccc",
+        border: "1px solid #aaa",
+        fontSize: "16px",
+        width: "100%",
     },
     captureButton: {
-        backgroundColor: "#333",
+        backgroundColor: "#007BFF",
         color: "#fff",
+        padding: "10px",
         border: "none",
-        borderRadius: "5px",
-        padding: "5px 10px",
+        borderRadius: "4px",
         cursor: "pointer",
     },
+    captureButtonDisabled: {
+        backgroundColor: "#aaa",
+        color: "#666",
+        padding: "10px",
+        border: "none",
+        borderRadius: "4px",
+        cursor: "not-allowed",
+    },
+    preview: {
+        width: "100%",
+        maxWidth: "320px",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+    },
+    buttonGroup: {
+        display: "flex",
+        justifyContent: "space-between",
+        gap: "10px",
+    },
     deleteButton: {
-        backgroundColor: "#999",
+        backgroundColor: "#f44336",
         color: "#fff",
         border: "none",
-        borderRadius: "5px",
-        padding: "5px 10px",
+        borderRadius: "4px",
+        padding: "10px",
         cursor: "pointer",
     },
     addButton: {
         backgroundColor: "#4CAF50",
         color: "#fff",
         border: "none",
-        borderRadius: "5px",
-        padding: "5px 10px",
+        borderRadius: "4px",
+        padding: "10px",
         cursor: "pointer",
     },
 };

@@ -1,15 +1,12 @@
-﻿// src/pages/SettingPage.js
-
-import React, { useState, useEffect } from "react";
-import { useWebcamContext } from "../context/WebcamContext";
+﻿import React, { useState, useEffect } from "react";
 
 const SettingPage = () => {
     const [audioDevices, setAudioDevices] = useState([]);
     const [videoDevices, setVideoDevices] = useState([]);
     const [selectedAudioDevice, setSelectedAudioDevice] = useState("");
     const [selectedVideoDevice, setSelectedVideoDevice] = useState("");
-    const { isCameraOn, toggleCamera } = useWebcamContext(); // WebcamContext에서 가져오기
-    const [isMicOn, setIsMicOn] = useState(true); // 마이크 상태 (기능 제외)
+    const [isCameraOn, setIsCameraOn] = useState(true); // 카메라 상태 관리
+    const [isMicOn, setIsMicOn] = useState(true); // 마이크 상태
     const [isScreenSharing, setIsScreenSharing] = useState(false);
     const [isAudioSharing, setIsAudioSharing] = useState(false);
 
@@ -26,8 +23,12 @@ const SettingPage = () => {
         });
     }, []);
 
+    const toggleCamera = () => {
+        setIsCameraOn((prev) => !prev);
+    };
+
     const handleMicToggle = () => {
-        setIsMicOn((prev) => !prev); // 버튼 상태만 변경
+        setIsMicOn((prev) => !prev);
     };
 
     const handleScreenSharingToggle = () => setIsScreenSharing((prev) => !prev);

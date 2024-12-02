@@ -1,62 +1,84 @@
-// src/App.js
-
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { FaceProvider } from "./context/FaceContext";
-import { WebcamProvider } from "./context/WebcamContext"; // WebcamContext 추가
 import StreamingPage from "./pages/StreamingPage";
 import FaceListPage from "./pages/FaceListPage";
-import SettingPage from "./pages/SettingPage"; // 추가된 SettingPage
+import SettingPage from "./pages/SettingPage";
+import LogoutPage from "./pages/LogoutPage";
 import LoginPage from "./pages/LoginPage";
+import KakaoCallback from "./pages/KakaoCallback";
 import Header from "./components/Header";
 import Webcam from "./components/Webcam";
 
 function App() {
+    const [userId, setUserId] = useState(null);
+
+    // 쿠키에서 특정 값 가져오기
+    const getCookieValue = (name) => {
+        const matches = document.cookie.match(
+            new RegExp(
+                "(?:^|; )" +
+                    name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") +
+                    "=([^;]*)"
+            )
+        );
+        return matches ? decodeURIComponent(matches[1]) : undefined;
+    };
+
+    useEffect(() => {
+        const userIdFromCookie = getCookieValue("user_id");
+        setUserId(userIdFromCookie);
+    }, []); // 처음 렌더링 시 userId를 설정
+
     return (
         <FaceProvider>
-            <WebcamProvider>
-                <Router>
-                    <div>
-                        {/* 웹캠 영역 */}
+            <Router>
+                <div>
+                    {/* userId가 있을 때만 Webcam을 렌더링 */}
+                    {userId && (
                         <div style={styles.webcamContainer}>
-                            <Webcam />
+                            <Webcam key={userId} /> {/* userId가 변하면 Webcam을 다시 렌더링 */}
                         </div>
-
-                        {/* 헤더와 라우팅 영역 */}
-                        <div style={styles.pageContentContainer}>
-                            <div style={styles.headerContainer}>
-                                <Header />
-                            </div>
-                            <Routes>
-                                <Route path="/" element={<LoginPage />} />
-                                <Route path="/streaming" element={<StreamingPage />} />
-                                <Route path="/facelist" element={<FaceListPage />} />
-                                <Route path="/settings" element={<SettingPage />} /> {/* Settings 페이지 추가 */}
-                            </Routes>
-                        </div>
+                    )}
+                    <div style={styles.pageContentContainer}>
+                        <Routes>
+                            {/* 기본 경로에서 user_id 여부에 따라 조건부 렌더링 */}
+                            <Route
+                                path="/"
+                                element={userId ? <Navigate to="/streaming" /> : <LoginPage />}
+                            />
+                            <Route path="/kakao-callback" element={<KakaoCallback />} />
+                            <Route
+                                path="*"
+                                element={
+                                    <>
+                                        <Header />
+                                        <Routes>
+                                            <Route path="/streaming" element={<StreamingPage />} />
+                                            <Route path="/facelist" element={<FaceListPage />} />
+                                            <Route path="/settings" element={<SettingPage />} />
+                                            <Route path="/logout" element={<LogoutPage />} />
+                                        </Routes>
+                                    </>
+                                }
+                            />
+                        </Routes>
                     </div>
-                </Router>
-            </WebcamProvider>
+                </div>
+            </Router>
         </FaceProvider>
     );
 }
 
 const styles = {
     webcamContainer: {
-        backgroundColor: "black", // 웹캠 배경색
+        backgroundColor: "black",
         display: "flex",
         padding: "40px 0",
         justifyContent: "center",
     },
-    headerContainer: {
-        backgroundColor: "#333", // 헤더 배경색
-        width: "100%",
-        paddingBottom: "20px",
-        display: "flex",
-        justifyContent: "center",
-    },
     pageContentContainer: {
-        backgroundColor: "#333", // 콘텐츠 배경색
+        backgroundColor: "#333",
         padding: "20px",
         display: "flex",
         flexDirection: "column",
