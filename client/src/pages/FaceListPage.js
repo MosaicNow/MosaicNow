@@ -12,6 +12,7 @@ function FaceListPage() {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [currentFaceName, setCurrentFaceName] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [hoveredButton, setHoveredButton] = useState(null); // 호버 상태 관리
 
     const getCookieValue = (name) => {
         const matches = document.cookie.match(
@@ -38,12 +39,11 @@ function FaceListPage() {
 
     useEffect(() => {
         socket.on("fetch_faces_result", (data) => {
-            // 중복 제거
             const uniqueFaces = Array.from(
                 new Set(data.faces.map((face) => face.face_name))
             ).map((name) => ({ face_name: name }));
 
-            setFaceList(uniqueFaces); // 중복 제거된 얼굴 목록 설정
+            setFaceList(uniqueFaces);
             setLoading(false);
         });
 
@@ -96,11 +96,10 @@ function FaceListPage() {
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.header}>Face List</h1>
             {loading ? (
                 <p style={styles.loadingMessage}>Loading...</p>
             ) : (
-                <>
+                <div>
                     {faceList.map((face) => (
                         <div key={face.face_name} style={styles.faceItem}>
                             <span style={styles.faceName}>{face.face_name}</span>
@@ -111,33 +110,53 @@ function FaceListPage() {
                                 style={styles.checkbox}
                             />
                             <button
-                                style={styles.deleteButton}
+                                style={{
+                                    ...styles.addButton,
+                                    ...(hoveredButton === face.face_name + "-add"
+                                        ? styles.hoverEffect
+                                        : {}),
+                                }}
+                                onMouseEnter={() => setHoveredButton(face.face_name + "-add")}
+                                onMouseLeave={() => setHoveredButton(null)}
+                                onClick={() => openPopup(face.face_name)}
+                            >
+                                Add
+                            </button>
+                            <button
+                                style={{
+                                    ...styles.deleteButton,
+                                    ...(hoveredButton === face.face_name + "-delete"
+                                        ? styles.hoverEffect
+                                        : {}),
+                                }}
+                                onMouseEnter={() => setHoveredButton(face.face_name + "-delete")}
+                                onMouseLeave={() => setHoveredButton(null)}
                                 onClick={() => deleteFace(face.face_name)}
                             >
                                 🗑
                             </button>
-                            <button
-                                style={styles.addButton}
-                                onClick={() => openPopup(face.face_name)}
-                            >
-                                Add
-                            </button> 
                         </div>
                     ))}
-                </>
+                </div>
             )}
-            <button style={styles.addFaceButton} onClick={() => openPopup(null)}>
+            <button
+                style={{
+                    ...styles.addFaceButton,
+                    ...(hoveredButton === "addNew" ? styles.hoverEffect : {}),
+                }}
+                onMouseEnter={() => setHoveredButton("addNew")}
+                onMouseLeave={() => setHoveredButton(null)}
+                onClick={() => openPopup(null)}
+            >
                 Add New Face
             </button>
             {isPopupOpen && (
-                <FacePopup
-                    initialFaceName={currentFaceName || ""}
-                    onClose={closePopup}
-                />
+                <FacePopup initialFaceName={currentFaceName || ""} onClose={closePopup} />
             )}
         </div>
     );
 }
+
 
 const styles = {
     container: {
@@ -146,41 +165,64 @@ const styles = {
         borderRadius: "8px",
         display: "flex",
         flexDirection: "column",
-        gap: "10px",
-    },
-    header: {
-        color: "#fff",
-        textAlign: "center",
+        alignItems: "center",
+        gap: "20px",
     },
     faceItem: {
         display: "flex",
-        alignItems: "center",
-        backgroundColor: "#555",
-        padding: "10px",
-        borderRadius: "5px",
+        alignItems: "center", 
+        justifyContent: "space-between",
+        backgroundColor: "#444",
+        padding: "14px 20px",
+        borderRadius: "10px",
         gap: "10px",
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+        marginBottom: "15px",
+        width: "100%",
     },
     faceName: {
         flexGrow: 1,
         color: "#fff",
-        fontSize: "16px",
+        fontSize: "18px",
+        fontWeight: "500",
+    },
+    checkbox: {
+        transform: "scale(1.2)",
     },
     addButton: {
         backgroundColor: "#007BFF",
         color: "#fff",
         border: "none",
-        borderRadius: "5px",
-        padding: "5px 10px",
+        borderRadius: "6px",
+        padding: "6px 12px",
         cursor: "pointer",
+        transition: "all 0.3s ease",
+    },
+    deleteButton: {
+        backgroundColor: "#FF4B4B",
+        color: "#fff",
+        border: "none",
+        borderRadius: "6px",
+        padding: "6px 12px",
+        cursor: "pointer",
+        transition: "all 0.3s ease",
     },
     addFaceButton: {
         backgroundColor: "#4CAF50",
         color: "#fff",
         border: "none",
-        borderRadius: "5px",
-        padding: "10px 20px",
+        borderRadius: "8px",
+        padding: "12px 24px",
+        fontSize: "16px",
+        fontWeight: "bold",
         cursor: "pointer",
-        alignSelf: "center",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
+        marginTop: "20px",
+        transition: "all 0.3s ease",
+    },
+    hoverEffect: {
+        transform: "scale(1.05)",
+        filter: "brightness(90%)",
     },
 };
 

@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import KakaoCallback from "./pages/KakaoCallback";
 import Header from "./components/Header";
 import StreamingPage from "./pages/StreamingPage";
+import { FaSignOutAlt } from "react-icons/fa";
 
 function App() {
     const [userId, setUserId] = useState(null);
@@ -31,9 +32,19 @@ function App() {
     return (
         <FaceProvider>
             <Router>
-                <div>
+                <div style={styles.appContainer}>
+                    {/* 로그아웃 아이콘 */}
+                    {userId && (
+                        <div style={styles.logoutIcon}>
+                            <a href="/logout" title="Logout">
+                                <FaSignOutAlt size={36} color="#fff" />
+                            </a>
+                        </div>
+                    )}
+
                     {/* StreamingPage를 모든 페이지 상단에 고정 */}
                     {userId && <StreamingPage key={userId} isGlobal />}
+
                     <div style={styles.pageContentContainer}>
                         <Routes>
                             <Route
@@ -63,12 +74,26 @@ function App() {
 }
 
 const styles = {
+    appContainer: {
+        position: "relative",
+        backgroundColor: "#333",
+        minHeight: "100vh",
+        padding: "0 20px",
+    },
+    logoutIcon: {
+        position: "absolute",
+        top: "30px",
+        right: "30px", // 오른쪽 위로 조정
+        cursor: "pointer",
+        fontSize: "36px", // 아이콘 크기 증가
+    },
     pageContentContainer: {
         backgroundColor: "#333",
         padding: "20px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        marginTop: "20px",
     },
 };
 

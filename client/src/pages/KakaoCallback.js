@@ -14,7 +14,7 @@ function KakaoCallback() {
                 .post("http://localhost:8000/auth/kakao-login", { code }, { withCredentials: true })
                 .then((response) => {
                     console.log("Login successful:", response.data);
-                    navigate("/streaming");
+                    navigate("/facelist");
                 })
                 .catch((error) => {
                     console.error("Login failed:", error);

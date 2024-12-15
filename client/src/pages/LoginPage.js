@@ -11,15 +11,15 @@ function LoginPage() {
     return (
         <div style={styles.container}>
             <div style={styles.content}>
-                <h1 style={styles.title}>Welcome to MosaicNow</h1>
-                <p style={styles.subtitle}>Sign in</p>
+                <h1 style={styles.title}>MosaicNow</h1>
+                <p style={styles.subtitle}>Connect with your Mosaic</p>
                 <button style={styles.kakaoButton} onClick={handleKakaoLogin}>
                     <img
-                        src="https://developers.kakao.com/assets/img/about/logos/kakaologo.png" // 신뢰할 수 있는 URL 또는 로컬 경로
+                        src="https://developers.kakao.com/assets/img/about/logos/kakaologo.png"
                         alt="Kakao Logo"
                         style={styles.kakaoLogo}
                     />
-                    카카오 로그인
+                    카카오 계정으로 로그인
                 </button>
             </div>
         </div>
@@ -28,55 +28,64 @@ function LoginPage() {
 
 const styles = {
     container: {
-        width: "100vw", // 화면 전체 너비
-        height: "100vh", // 화면 전체 높이
-        backgroundColor: "#2c2c2c", // 어두운 회색 배경
+        width: "100vw",
+        height: "100vh",
+        background: "linear-gradient(135deg, #2E2E2E, #1E1E1E)", // 어두운 그라디언트 배경
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        margin: 0,
-        padding: 0,
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     },
     content: {
         textAlign: "center",
-        backgroundColor: "rgba(255, 255, 255, 0.8)", // 반투명 흰색
-        padding: "40px",
+        backgroundColor: "rgba(255, 255, 255, 0.1)", // 투명한 흰색 배경
+        backdropFilter: "blur(10px)", // 배경 흐리기 효과
+        border: "1px solid rgba(255, 255, 255, 0.3)",
         borderRadius: "12px",
-        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+        padding: "50px 30px",
+        boxShadow: "0 8px 16px rgba(0, 0, 0, 0.4)",
+        color: "#E0E0E0",
         maxWidth: "400px",
         width: "100%",
     },
     title: {
-        fontSize: "24px",
-        fontWeight: "bold",
-        color: "#333",
+        fontSize: "28px",
+        fontWeight: "600",
         marginBottom: "10px",
+        letterSpacing: "1px",
+        color: "#FFFFFF",
     },
     subtitle: {
-        fontSize: "16px",
-        color: "#333",
-        marginBottom: "20px",
+        fontSize: "18px",
+        fontWeight: "300",
+        marginBottom: "30px",
+        color: "#BDBDBD",
     },
     kakaoButton: {
         display: "flex",
         alignItems: "center",
-        justifyContent: "center", // 버튼 중앙 정렬
+        justifyContent: "center",
         backgroundColor: "#FEE500",
         border: "none",
         borderRadius: "6px",
-        width: "240px",
+        width: "280px",
         height: "50px",
         cursor: "pointer",
-        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
         fontSize: "16px",
         fontWeight: "bold",
-        color: "#000000",
-        margin: "0 auto", // 버튼을 부모 요소의 중앙으로 정렬
+        color: "#3C1E1E",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)",
+        margin: "0 auto",
+        transition: "transform 0.2s, box-shadow 0.2s",
+    },
+    kakaoButtonHover: {
+        transform: "scale(1.05)",
+        boxShadow: "0 6px 12px rgba(0, 0, 0, 0.3)",
     },
     kakaoLogo: {
-        width: "20px",
-        height: "20px",
-        marginRight: "8px",
+        width: "24px",
+        height: "24px",
+        marginRight: "10px",
     },
 };
 

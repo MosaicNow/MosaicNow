@@ -201,7 +201,18 @@ function StreamingPage() {
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.header}>Streaming</h1>
+            <h1 style={styles.header}>MosaicNow</h1>
+            
+            <div style={styles.inputGroup}>
+                <label style={styles.label}>Stream Key</label>
+                <input
+                    type="text"
+                    value={streamKey}
+                    onChange={(e) => setStreamKey(e.target.value)}
+                    style={styles.input}
+                    placeholder="Enter Stream Key"
+                />
+            </div>
             <div style={styles.webcamWrapper}>
                 {processedFrame ? (
                     <img
@@ -212,16 +223,6 @@ function StreamingPage() {
                 ) : (
                     <video ref={videoRef} autoPlay muted style={styles.webcam}></video>
                 )}
-            </div>
-            <div style={styles.inputGroup}>
-                <label style={styles.label}>Stream Key</label>
-                <input
-                    type="text"
-                    value={streamKey}
-                    onChange={(e) => setStreamKey(e.target.value)}
-                    style={styles.input}
-                    placeholder="Enter Stream Key"
-                />
             </div>
             <div style={styles.buttonGroup}>
                 <button
@@ -260,8 +261,13 @@ const styles = {
     },
     header: {
         color: "#fff",
-        fontSize: "24px",
+        fontSize: "36px",
+        fontWeight: "bold", 
+        letterSpacing: "2px",
+        textShadow: "0 2px 4px rgba(0, 0, 0, 0.5)",
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     },
+    
     inputGroup: {
         display: "flex",
         flexDirection: "column",
@@ -316,41 +322,57 @@ const styles = {
         justifyContent: "center",
         gap: "20px",
     },
+    
     previewButton: {
-        backgroundColor: "#007BFF",
+        background: "linear-gradient(135deg, #6EC1E4, #007BFF)",
         color: "#fff",
         border: "none",
-        borderRadius: "4px",
-        padding: "10px 20px",
-        cursor: "pointer",
+        borderRadius: "25px",
+        padding: "12px 24px",
         fontSize: "16px",
+        fontWeight: "bold",
+        cursor: "pointer",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
     },
+    
     startButton: {
-        backgroundColor: "#28A745",
+        background: "linear-gradient(135deg, #34D399, #28A745)",
         color: "#fff",
         border: "none",
-        borderRadius: "4px",
-        padding: "10px 20px",
-        cursor: "pointer",
+        borderRadius: "25px",
+        padding: "12px 24px",
         fontSize: "16px",
+        fontWeight: "bold",
+        cursor: "pointer",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
     },
+    
     stopButton: {
-        backgroundColor: "#FF0000",
+        background: "linear-gradient(135deg, #F87171, #FF4B4B)",
         color: "#fff",
         border: "none",
-        borderRadius: "4px",
-        padding: "10px 20px",
-        cursor: "pointer",
+        borderRadius: "25px",
+        padding: "12px 24px",
         fontSize: "16px",
+        fontWeight: "bold",
+        cursor: "pointer",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
     },
+    
     startButtonDisabled: {
-        backgroundColor: "#aaa",
+        background: "linear-gradient(135deg, #D1D5DB, #A1A1A1)",
         color: "#666",
         border: "none",
-        borderRadius: "4px",
-        padding: "10px 20px",
-        cursor: "not-allowed",
+        borderRadius: "25px",
+        padding: "12px 24px",
         fontSize: "16px",
-    },};
+        fontWeight: "bold",
+        cursor: "not-allowed",
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    },
+    };
 
 export default StreamingPage;

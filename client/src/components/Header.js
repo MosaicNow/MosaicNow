@@ -1,6 +1,4 @@
-﻿// src/components/Header.js
-
-import React from "react";
+﻿import React from "react";
 import { Link, useLocation } from "react-router-dom";
 
 const Header = () => {
@@ -10,13 +8,15 @@ const Header = () => {
 
     return (
         <header style={styles.header}>
-            <nav style={styles.nav}>
-                <Link
-                    to="/streaming"
-                    style={isActive("/streaming") ? styles.activeButton : styles.button}
-                >
-                    Streaming
-                </Link>
+            <div style={styles.sliderContainer}>
+                <div
+                    style={{
+                        ...styles.sliderBackground,
+                        transform: isActive("/facelist")
+                            ? "translateX(0)"
+                            : "translateX(100%)",
+                    }}
+                />
                 <Link
                     to="/facelist"
                     style={isActive("/facelist") ? styles.activeButton : styles.button}
@@ -29,13 +29,7 @@ const Header = () => {
                 >
                     Settings
                 </Link>
-                <Link
-                    to="/logout"
-                    style={isActive("/logout") ? styles.activeButton : styles.button}
-                >
-                    Logout
-                </Link>
-            </nav>
+            </div>
         </header>
     );
 };
@@ -45,29 +39,53 @@ const styles = {
         backgroundColor: "#333", // 헤더 배경색
         display: "flex",
         justifyContent: "center",
-        padding: "10px 0",
+        alignItems: "center",
+        padding: "20px 0",
     },
-    nav: {
+    sliderContainer: {
         display: "flex",
-        gap: "15px",
+        position: "relative",
+        backgroundColor: "#444",
+        borderRadius: "50px",
+        width: "300px",
+        height: "50px",
+        alignItems: "center",
+        justifyContent: "space-around",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
+    },
+    sliderBackground: {
+        position: "absolute",
+        top: "5px",
+        left: "5px",
+        width: "140px",
+        height: "40px",
+        backgroundColor: "#61dafb",
+        borderRadius: "50px",
+        transition: "transform 0.3s ease",
     },
     button: {
-        backgroundColor: "#555",
-        color: "white",
-        border: "none",
-        padding: "10px 20px",
-        borderRadius: "5px",
-        cursor: "pointer",
+        position: "relative",
+        zIndex: 1,
+        color: "#ddd",
+        textDecoration: "none",
+        fontWeight: "bold",
         fontSize: "16px",
+        textAlign: "center",
+        width: "50%",
+        height: "100%",
+        lineHeight: "50px", // 수직 중앙 정렬
     },
     activeButton: {
-        backgroundColor: "#61dafb",
+        position: "relative",
+        zIndex: 1,
         color: "black",
-        border: "none",
-        padding: "10px 20px",
-        borderRadius: "5px",
-        cursor: "pointer",
+        textDecoration: "none",
+        fontWeight: "bold",
         fontSize: "16px",
+        textAlign: "center",
+        width: "50%",
+        height: "100%",
+        lineHeight: "50px",
     },
 };
 

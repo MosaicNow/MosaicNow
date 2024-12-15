@@ -36,8 +36,6 @@ const SettingPage = () => {
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.header}>Settings</h1>
-
             <div style={styles.deviceSelection}>
                 {/* Audio Device Selection */}
                 <div style={styles.deviceGroup}>
@@ -144,7 +142,7 @@ const SettingPage = () => {
     );
 };
 
-const styles = {
+const styles = {    
     container: {
         backgroundColor: "#333",
         padding: "20px",
@@ -153,10 +151,6 @@ const styles = {
         flexDirection: "column",
         alignItems: "center",
         gap: "20px",
-    },
-    header: {
-        color: "#fff",
-        fontSize: "24px",
     },
     deviceSelection: {
         display: "flex",
