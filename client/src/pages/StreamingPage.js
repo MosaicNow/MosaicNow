@@ -1,6 +1,5 @@
 ﻿import React, { useState, useRef, useEffect } from "react";
 import { useFaceContext } from "../context/FaceContext";
-import Webcam from "../components/Webcam";
 import io from "socket.io-client";
 import axios from "axios";
 
@@ -17,8 +16,10 @@ function StreamingPage() {
     const [isStreaming, setIsStreaming] = useState(
         JSON.parse(localStorage.getItem("isStreaming")) || false
     );
-    const [processedFrame, setProcessedFrame] = useState(""); // 모자이크 화면
-    const previewIntervalRef = useRef(null); // setInterval 참조 저장
+    const [processedFrame, setProcessedFrame] = useState("");
+    const previewIntervalRef = useRef(null);
+    const videoRef = useRef(null);
+    const streamRef = useRef(null);
 
     const getUserIdFromCookie = () => {
         const match = document.cookie.match(/user_id=([^;]+)/);
@@ -42,65 +43,125 @@ function StreamingPage() {
         fetchStreamKey();
     }, [userId]);
 
-    // Preview 상태 유지
     useEffect(() => {
-        if (isPreviewing) {
-            startPreview();
-        }
-        return () => {
-            stopPreview();
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        startWebcam();
+        return () => stopWebcam();
     }, []);
 
-    // 상태가 변경될 때 로컬스토리지에 저장
     useEffect(() => {
         localStorage.setItem("isPreviewing", JSON.stringify(isPreviewing));
         localStorage.setItem("isStreaming", JSON.stringify(isStreaming));
     }, [isPreviewing, isStreaming]);
 
-    const startPreview = () => {
-        setIsPreviewing(true);
+    const startWebcam = () => {
+        if (navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices
+                .getUserMedia({ video: true })
+                .then((stream) => {
+                    streamRef.current = stream;
+                    const video = videoRef.current;
+                    if (video) {
+                        video.srcObject = stream;
+                        video.onloadedmetadata = () => {
+                            video.play();
+                        };
+                    }
+                })
+                .catch((error) => console.error("Error accessing webcam:", error));
+        }
+    };
 
-        // 모자이크 프레임을 서버에서 수신
+    const stopWebcam = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach((track) => track.stop());
+        }
+    };
+
+    const startPreview = () => {
+        if (previewIntervalRef.current) return; // 이미 Interval이 설정되어 있다면 중복 실행 방지
+    
+        setIsPreviewing(true);
+    
+        // 기존 이벤트 리스너 제거 후 다시 등록
+        socket.off("processed_frame");
         socket.on("processed_frame", (data) => {
+            console.log("Received processed frame");
             setProcessedFrame(`data:image/jpeg;base64,${data.image}`);
         });
-
-        const video = document.querySelector("video");
-        if (!video) {
-            alert("Webcam not available.");
-            return;
-        }
-
+    
         const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
         canvas.width = 640;
         canvas.height = 480;
-        const context = canvas.getContext("2d");
-
-        previewIntervalRef.current = setInterval(() => {
-            if (video.readyState === 4) {
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const frame = canvas.toDataURL("image/jpeg").split(",")[1];
-                socket.emit("video_frame", {
-                    user_id: userId,
-                    face_names: selectedFaces,
-                    image: frame,
+    
+        const video = videoRef.current;
+    
+        const restartVideoStream = () => {
+            console.warn("Restarting video stream...");
+            stopWebcam(); // 기존 스트림 중단
+            startWebcam(); // 스트림 재시작
+        };
+    
+        // 프레임 전송 로직
+        const sendFrames = () => {
+            previewIntervalRef.current = setInterval(() => {
+                if (video && video.readyState === 4 && !video.paused) {
+                    try {
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const frame = canvas.toDataURL("image/jpeg").split(",")[1];
+                        console.log("Sending video frame to server...");
+                        socket.emit("video_frame", {
+                            user_id: userId,
+                            face_names: selectedFaces,
+                            image: frame,
+                        });
+                    } catch (error) {
+                        console.error("Error sending frame:", error);
+                    }
+                } else {
+                    console.warn("Video not ready or paused");
+                    video.play().catch(() => {
+                        console.error("Error playing video, restarting stream...");
+                        restartVideoStream(); // 스트림 재시작
+                    });
+                }
+            }, 200); // 주기 200ms로 설정
+        };
+    
+        if (video) {
+            // 비디오 상태 확인 및 재생
+            if (video.paused || video.readyState < 4) {
+                console.warn("Video is not ready, attempting to play...");
+                video.play().then(() => {
+                    console.log("Video playback started");
+                    sendFrames();
+                }).catch(() => {
+                    console.error("Failed to play video, restarting stream...");
+                    restartVideoStream();
                 });
+            } else {
+                sendFrames();
             }
-        }, 100);
-    };
-
-    const stopPreview = () => {
-        setIsPreviewing(false);
-        setProcessedFrame(""); // 모자이크 화면 초기화
-        socket.off("processed_frame"); // 서버 이벤트 리스너 제거
-
-        if (previewIntervalRef.current) {
-            clearInterval(previewIntervalRef.current); // 프레임 전송 중단
-            previewIntervalRef.current = null; // 참조 초기화
+        } else {
+            console.error("Video element is not ready.");
         }
     };
+    
+    const stopPreview = () => {
+        setIsPreviewing(false);
+        setProcessedFrame("");
+        socket.off("processed_frame");
+    
+        if (previewIntervalRef.current) {
+            clearInterval(previewIntervalRef.current);
+            previewIntervalRef.current = null;
+        }
+    
+        // 웹캠 스트림 재시작
+        stopWebcam(); // 기존 스트림 정리
+        startWebcam(); // 새로 웹캠 시작
+    };
+    
 
     const startStreaming = async () => {
         if (!streamKey) {
@@ -135,13 +196,23 @@ function StreamingPage() {
     const stopStreaming = () => {
         socket.emit("stop_streaming", { user_id: userId });
         alert("Streaming stopped!");
-        stopPreview();
         setIsStreaming(false);
     };
 
     return (
         <div style={styles.container}>
             <h1 style={styles.header}>Streaming</h1>
+            <div style={styles.webcamWrapper}>
+                {processedFrame ? (
+                    <img
+                        src={processedFrame}
+                        alt="Processed Frame"
+                        style={styles.processedFrame}
+                    />
+                ) : (
+                    <video ref={videoRef} autoPlay muted style={styles.webcam}></video>
+                )}
+            </div>
             <div style={styles.inputGroup}>
                 <label style={styles.label}>Stream Key</label>
                 <input
@@ -152,11 +223,6 @@ function StreamingPage() {
                     placeholder="Enter Stream Key"
                 />
             </div>
-            <Webcam
-                isPopupOpen={false}
-                processedFrame={processedFrame} // 모자이크 프레임 전달
-                isPreviewing={isPreviewing}
-            />
             <div style={styles.buttonGroup}>
                 <button
                     style={styles.previewButton}
@@ -216,6 +282,35 @@ const styles = {
         fontSize: "14px",
         width: "100%",
     },
+    webcamWrapper: {
+        display: "flex",
+        justifyContent: "center",
+        paddingBottom: "20px",
+    },
+    webcam: {
+        width: "640px",
+        height: "480px",
+        border: "2px solid #fff",
+        borderRadius: "8px",
+    },
+    processedFrame: {
+        width: "640px",
+        height: "480px",
+        border: "2px solid #fff",
+        borderRadius: "8px",
+    },
+    placeholder: {
+        width: "640px",
+        height: "480px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#222",
+        color: "#aaa",
+        fontSize: "18px",
+        border: "2px solid #fff",
+        borderRadius: "8px",
+    },
     buttonGroup: {
         display: "flex",
         justifyContent: "center",
@@ -256,7 +351,6 @@ const styles = {
         padding: "10px 20px",
         cursor: "not-allowed",
         fontSize: "16px",
-    },
-};
+    },};
 
 export default StreamingPage;
