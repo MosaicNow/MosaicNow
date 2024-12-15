@@ -12,6 +12,7 @@ import { FaSignOutAlt } from "react-icons/fa";
 
 function App() {
     const [userId, setUserId] = useState(null);
+    const [isUserReady, setIsUserReady] = useState(false); // userId가 준비되었는지 확인하는 상태
 
     const getCookieValue = (name) => {
         const matches = document.cookie.match(
@@ -27,6 +28,10 @@ function App() {
     useEffect(() => {
         const userIdFromCookie = getCookieValue("user_id");
         setUserId(userIdFromCookie);
+
+        if (userIdFromCookie) {
+            setIsUserReady(true); // userId가 설정되면 준비 상태로 변경
+        }
     }, []);
 
     return (
@@ -42,8 +47,8 @@ function App() {
                         </div>
                     )}
 
-                    {/* StreamingPage를 모든 페이지 상단에 고정 */}
-                    {userId && <StreamingPage key={userId} isGlobal />}
+                    {/* StreamingPage를 userId가 준비된 후에 렌더링 */}
+                    {isUserReady && <StreamingPage key={userId} isGlobal />}
 
                     <div style={styles.pageContentContainer}>
                         <Routes>

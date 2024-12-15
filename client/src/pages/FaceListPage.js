@@ -48,6 +48,7 @@ function FaceListPage() {
         });
 
         socket.on("delete_face_result", (data) => {
+            console.log("Server Response:", data); 
             if (data.success) {
                 fetchFaceList();
             } else {
@@ -91,6 +92,7 @@ function FaceListPage() {
             return;
         }
 
+        console.log("Deleting face:", faceName, "for user:", userId);
         socket.emit("delete_face", { user_id: userId, face_name: faceName });
     };
 

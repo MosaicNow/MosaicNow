@@ -125,7 +125,7 @@ function StreamingPage() {
                         restartVideoStream(); // 스트림 재시작
                     });
                 }
-            }, 200); // 주기 200ms로 설정
+            }, 200);
         };
     
         if (video) {
@@ -202,17 +202,6 @@ function StreamingPage() {
     return (
         <div style={styles.container}>
             <h1 style={styles.header}>MosaicNow</h1>
-            
-            <div style={styles.inputGroup}>
-                <label style={styles.label}>Stream Key</label>
-                <input
-                    type="text"
-                    value={streamKey}
-                    onChange={(e) => setStreamKey(e.target.value)}
-                    style={styles.input}
-                    placeholder="Enter Stream Key"
-                />
-            </div>
             <div style={styles.webcamWrapper}>
                 {processedFrame ? (
                     <img
@@ -223,6 +212,16 @@ function StreamingPage() {
                 ) : (
                     <video ref={videoRef} autoPlay muted style={styles.webcam}></video>
                 )}
+            </div>
+            <div style={styles.inputGroup}>
+                <label style={styles.label}>Stream Key</label>
+                <input
+                    type="text"
+                    value={streamKey}
+                    onChange={(e) => setStreamKey(e.target.value)}
+                    style={styles.input}
+                    placeholder="Enter Stream Key"
+                />
             </div>
             <div style={styles.buttonGroup}>
                 <button

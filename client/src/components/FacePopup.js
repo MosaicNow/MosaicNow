@@ -49,13 +49,16 @@ function FacePopup({ onClose, initialFaceName }) {
         setCapturedImage(canvas.toDataURL("image/jpeg"));
     };
 
+    const handleDelete = () => {
+        setCapturedImage(null); // 이미지 삭제
+    };
+
     const handleAdd = () => {
         if (!capturedImage || !faceName.trim()) {
             alert("Please capture an image and enter a name.");
             return;
         }
 
-        // 쿠키에서 user_id 읽기
         const getCookieValue = (name) => {
             const matches = document.cookie.match(
                 new RegExp(
@@ -75,7 +78,7 @@ function FacePopup({ onClose, initialFaceName }) {
         }
 
         socket.emit("register_face", {
-            user_id: userId, // 쿠키에서 가져온 user_id 사용
+            user_id: userId,
             face_name: faceName,
             image: capturedImage.split(",")[1],
         });
@@ -98,20 +101,27 @@ function FacePopup({ onClose, initialFaceName }) {
                     placeholder="Enter face name"
                     style={styles.input}
                 />
-                <button onClick={handleCapture} style={styles.captureButton}>
-                    Capture
-                </button>
+                <div style={styles.buttonGroup}>
+                    <button onClick={handleCapture} style={styles.captureButton}>
+                        Capture
+                    </button>
+                    {capturedImage && (
+                        <>
+                            <button onClick={handleDelete} style={styles.deleteButton}>
+                                Delete
+                            </button>
+                            <button onClick={handleAdd} style={styles.addButton}>
+                                Add
+                            </button>
+                        </>
+                    )}
+                </div>
                 {capturedImage && (
-                    <>
-                        <img
-                            src={capturedImage}
-                            alt="Captured"
-                            style={styles.preview}
-                        />
-                        <button onClick={handleAdd} style={styles.addButton}>
-                            Add
-                        </button>
-                    </>
+                    <img
+                        src={capturedImage}
+                        alt="Captured"
+                        style={styles.preview}
+                    />
                 )}
             </div>
         </div>
@@ -139,6 +149,7 @@ const styles = {
         flexDirection: "column",
         gap: "20px",
         position: "relative",
+        alignItems: "center",
     },
     closeButton: {
         position: "absolute",
@@ -164,39 +175,26 @@ const styles = {
         fontSize: "16px",
         width: "100%",
     },
+    buttonGroup: {
+        display: "flex",
+        justifyContent: "center",
+        gap: "10px",
+        width: "100%",
+    },
     captureButton: {
         backgroundColor: "#007BFF",
         color: "#fff",
-        padding: "10px",
+        padding: "10px 20px",
         border: "none",
         borderRadius: "4px",
         cursor: "pointer",
-    },
-    captureButtonDisabled: {
-        backgroundColor: "#aaa",
-        color: "#666",
-        padding: "10px",
-        border: "none",
-        borderRadius: "4px",
-        cursor: "not-allowed",
-    },
-    preview: {
-        width: "100%",
-        maxWidth: "320px",
-        border: "1px solid #ccc",
-        borderRadius: "4px",
-    },
-    buttonGroup: {
-        display: "flex",
-        justifyContent: "space-between",
-        gap: "10px",
     },
     deleteButton: {
         backgroundColor: "#f44336",
         color: "#fff",
         border: "none",
         borderRadius: "4px",
-        padding: "10px",
+        padding: "10px 20px",
         cursor: "pointer",
     },
     addButton: {
@@ -204,8 +202,15 @@ const styles = {
         color: "#fff",
         border: "none",
         borderRadius: "4px",
-        padding: "10px",
+        padding: "10px 20px",
         cursor: "pointer",
+    },
+    preview: {
+        width: "100%",
+        maxWidth: "320px",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        marginTop: "10px",
     },
 };
 

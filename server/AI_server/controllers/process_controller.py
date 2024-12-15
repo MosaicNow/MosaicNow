@@ -2,7 +2,7 @@ import base64
 import cv2
 import numpy as np
 import torch 
-from services.embedding_service import save_face_embedding_to_db, get_user_embeddings, fetch_faces
+from services.embedding_service import save_face_embedding_to_db, get_user_embeddings, fetch_faces, delete_face_from_db
 from services.mosaic_service import detect_faces_and_apply_mosaic
 from services.ffmpeg_service import start_ffmpeg_stream, stop_ffmpeg_stream, ffmpeg_processes
 from app_utils.yolov5_utils import model, resnet
@@ -136,6 +136,26 @@ def start_streaming(sid, data):
     except Exception as e:
         print(f"[ERROR] Failed to start streaming process: {e}")
         sio.emit('streaming_error', {'message': 'Failed to start streaming process'}, room=sid)
+
+# 얼굴 삭제 이벤트 핸들러
+@sio.event
+def delete_face(sid, data):
+    try:
+        user_id = data['user_id']
+        face_name = data['face_name']
+
+        print(f"Deleting face: {face_name} for user: {user_id}")
+
+        if delete_face_from_db(user_id, face_name):
+            print(f"Face {face_name} deleted successfully for user {user_id}.")
+            sio.emit('delete_face_result', {'success': True, 'message': f'Face "{face_name}" deleted successfully.'}, room=sid)
+        else:
+            print(f"Failed to delete face: {face_name} for user: {user_id}")
+            sio.emit('delete_face_result', {'success': False, 'message': 'Failed to delete face.'}, room=sid)
+    except Exception as e:
+        print(f"Error in delete_face: {e}")
+        sio.emit('delete_face_result', {'success': False, 'message': 'Internal server error.'}, room=sid)
+
 
 
 # 스트리밍 중지 이벤트

@@ -66,4 +66,23 @@ def fetch_faces(user_id):
         print(f"Error in fetch_faces: {e}")
         return []
 
+def delete_face_from_db(user_id, face_name):
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        query = "DELETE FROM embeddings WHERE user_id = %s AND face_name = %s"
+        cursor.execute(query, (user_id, face_name))
+        db.commit()
+
+        if cursor.rowcount > 0:
+            print(f"Deleted face {face_name} for user {user_id}.")
+            return True
+        else:
+            print(f"No record found for face {face_name} with user {user_id}.")
+            return False
+    except Exception as e:
+        print(f"Error deleting face from database: {e}")
+        return False
+
 
