@@ -10,9 +10,11 @@ const socket = io("http://localhost:5000", {
 function StreamingPage() {
     const { selectedFaces } = useFaceContext();
     const [streamKey, setStreamKey] = useState("");
-    const [isPreviewing, setIsPreviewing] = useState(
-        JSON.parse(localStorage.getItem("isPreviewing")) || false
-    );
+    const [isPreviewing, setIsPreviewing] = useState(() => {
+        const savedIsPreviewing = localStorage.getItem("isPreviewing");
+        return savedIsPreviewing ? JSON.parse(savedIsPreviewing) : false;
+    });
+    
     const [isStreaming, setIsStreaming] = useState(
         JSON.parse(localStorage.getItem("isStreaming")) || false
     );
