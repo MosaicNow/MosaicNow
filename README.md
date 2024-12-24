@@ -18,6 +18,13 @@ MosaicNow는 라이브 방송 중 초상권 침해를 방지하기 위해 개발
 
 <br>
 
+## Tech Stack
+![react](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) <br>
+![node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white) <br>
+![mysal](https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white) <br>
+
+<br>
+
 ## Developers
 
 - [유혜진](https://github.com/HyejinYoo): Backend (AI Server)
