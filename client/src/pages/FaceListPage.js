@@ -3,7 +3,7 @@ import FacePopup from "../components/FacePopup";
 import { useFaceContext } from "../context/FaceContext";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:5000", {
+const socket = io("http://110.9.11.9:5000", {
     transports: ["websocket"],
 });
 

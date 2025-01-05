@@ -54,18 +54,18 @@ function App() {
                         <Routes>
                             <Route
                                 path="/"
-                                element={userId ? <Navigate to="/facelist" /> : <LoginPage />}
+                                element={userId ? <Navigate to="https://mosaic-now.com/facelist" /> : <LoginPage />}
                             />
-                            <Route path="/kakao-callback" element={<KakaoCallback />} />
+                            <Route path="https://mosaic-now.com/kakao-callback" element={<KakaoCallback />} />
                             <Route
                                 path="*"
                                 element={
                                     <>
                                         <Header />
                                         <Routes>
-                                            <Route path="/facelist" element={<FaceListPage />} />
-                                            <Route path="/settings" element={<SettingPage />} />
-                                            <Route path="/logout" element={<LogoutPage />} />
+                                            <Route path="https://mosaic-now.com/facelist" element={<FaceListPage />} />
+                                            <Route path="https://mosaic-now.com/settings" element={<SettingPage />} />
+                                            <Route path="https://mosaic-now.com/logout" element={<LogoutPage />} />
                                         </Routes>
                                     </>
                                 }

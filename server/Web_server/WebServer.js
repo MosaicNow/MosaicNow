@@ -5,21 +5,28 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const authRoutes = require("./routes/auth");
-const streamingkeyRoutes = require("./routes/streamingkey"); // 파일 이름과 변수 이름 일치
+const streamingkeyRoutes = require("./routes/streamingkey");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Middleware
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+const corsOptions = {
+    origin: 'http://110.9.11.9:3000',  // 허용할 출처를 명시적으로 설정
+    methods: 'GET, POST, PUT, DELETE',  // 허용할 HTTP 메소드
+    allowedHeaders: 'Content-Type, Authorization',  // 허용할 헤더
+    credentials: true  // 쿠키와 인증 정보 허용
+  };
+  
+  app.use(cors(corsOptions));  // CORS 미들웨어 사용
+  
+
 app.use(bodyParser.json());
 app.use(cookieParser());
 
 // Routes
 app.use("/auth", authRoutes);
-app.use("/streamingkey", streamingkeyRoutes); // 올바른 경로 지정
+app.use("/streamingkey", streamingkeyRoutes);
 
-// Start the server
 app.listen(PORT, () => {
-    console.log(`Web server is running on port ${PORT}`);
+  console.log(`Web server is running on port ${PORT}`);
 });

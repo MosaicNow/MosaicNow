@@ -50,13 +50,15 @@ router.post("/kakao-login", async (req, res) => {
         // Step 5: Set cookies (accessible in the browser)
         res.cookie("auth_token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
         res.cookie("user_id", userId, { httpOnly: false, secure: process.env.NODE_ENV === "production" }); // 일반 쿠키 설정
-
+        console.log("Kakao login succesful");
+        
         res.json({ message: "Login successful", userId });
     } catch (error) {
         console.error("Kakao login error:", error);
         res.status(500).json({ error: "Kakao login failed" });
     }
 });
+
 
 
 module.exports = router;

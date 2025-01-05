@@ -11,10 +11,10 @@ function KakaoCallback() {
 
         if (code) {
             axios
-                .post("http://localhost:8000/auth/kakao-login", { code }, { withCredentials: true })
+                .post("http://110.9.11.9:8000/auth/kakao-login", { code }, { withCredentials: true })
                 .then((response) => {
                     console.log("Login successful:", response.data);
-                    navigate("/facelist");
+                    navigate("https://mosaic-now.com/facelist");
                 })
                 .catch((error) => {
                     console.error("Login failed:", error);
