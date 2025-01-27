@@ -3,7 +3,7 @@ import { useFaceContext } from "../context/FaceContext";
 import io from "socket.io-client";
 import axios from "axios";
 
-const socket = io("http://110.9.11.9:5000", {
+const socket = io("https://mosaic-now.com/ai", {
     transports: ["websocket"],
 });
 
@@ -35,7 +35,7 @@ function StreamingPage() {
             if (!userId) return;
 
             try {
-                const response = await axios.get(`http://110.9.11.9:8000/streamingkey/${userId}`);
+                const response = await axios.get(`wss://mosaic-now.com/api/streamingkey/${userId}`);
                 if (response.data.streamKey) setStreamKey(response.data.streamKey);
             } catch (error) {
                 console.error("Error fetching streamKey:", error);
@@ -177,7 +177,7 @@ function StreamingPage() {
         }
 
         try {
-            const response = await axios.post("http://110.9.11.9:8000/streamingkey/update-streamkey", {
+            const response = await axios.post("wss://mosaic-now.com/api/streamingkey/update-streamkey", {
                 user_id: userId,
                 streamKey,
             });

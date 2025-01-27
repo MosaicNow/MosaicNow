@@ -11,7 +11,7 @@ function KakaoCallback() {
 
         if (code) {
             axios
-                .post("http://110.9.11.9:8000/auth/kakao-login", { code }, { withCredentials: true })
+                .post("wss://mosaic-now.com/api/auth/kakao-login", { code }, { withCredentials: true })
                 .then((response) => {
                     console.log("Login successful:", response.data);
                     navigate("https://mosaic-now.com/facelist");

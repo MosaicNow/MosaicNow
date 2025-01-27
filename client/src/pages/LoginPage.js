@@ -3,7 +3,7 @@
 function LoginPage() {
     const handleKakaoLogin = () => {
         const KAKAO_CLIENT_ID = "748c9492ed282044af98083a57882007";
-        const KAKAO_REDIRECT_URI = "http://110.9.11.9:3000/kakao-callback";
+        const KAKAO_REDIRECT_URI = "https://mosaic-now.com/kakao-callback";
         const kakaoAuthURL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${KAKAO_CLIENT_ID}&redirect_uri=${KAKAO_REDIRECT_URI}`;
         window.location.href = kakaoAuthURL;
     };
