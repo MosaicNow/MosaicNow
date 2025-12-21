@@ -27,7 +27,7 @@ MosaicNow는 라이브 방송 중 초상권 침해를 방지하기 위해 개발
 
 ## Developers
 
-- [유혜진](https://github.com/HyejinYoo): Backend (AI Server)
+- [유하진](https://github.com/hoozoi): Backend (AI Server)
 - [정유라](https://github.com/yoshii): Backend (Web API), Frontend
 
 <br>
